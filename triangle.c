@@ -1423,34 +1423,43 @@ int status;
   exit(status);
 }
 
-#ifdef ANSI_DECLARATORS
-VOID *trimalloc(int size)
-#else /* not ANSI_DECLARATORS */
-VOID *trimalloc(size)
-int size;
-#endif /* not ANSI_DECLARATORS */
+#ifdef CUSTOM_ALLOCATOR
+  VOID *(*trimalloc)(int) = 0;
+#else
+  #ifdef ANSI_DECLARATORS
+  VOID *trimalloc(int size)
+  #else /* not ANSI_DECLARATORS */
+  VOID *trimalloc(size)
+  int size;
+  #endif /* not ANSI_DECLARATORS */
 
-{
-  VOID *memptr;
+  {
+    VOID *memptr;
 
-  memptr = (VOID *) malloc((unsigned int) size);
-  if (memptr == (VOID *) NULL) {
-    printf("Error:  Out of memory.\n");
-    triexit(1);
+    memptr = (VOID *) malloc((unsigned int) size);
+    if (memptr == (VOID *) NULL) {
+      printf("Error:  Out of memory.\n");
+      triexit(1);
+    }
+    return(memptr);
   }
-  return(memptr);
-}
+#endif /* not CUSTOM_ALLOCATOR */
 
-#ifdef ANSI_DECLARATORS
-void trifree(VOID *memptr)
-#else /* not ANSI_DECLARATORS */
-void trifree(memptr)
-VOID *memptr;
-#endif /* not ANSI_DECLARATORS */
 
-{
-  free(memptr);
-}
+#ifdef CUSTOM_ALLOCATOR
+  void (*trifree)(VOID *) = 0;
+#else
+  #ifdef ANSI_DECLARATORS
+  void trifree(VOID *memptr)
+  #else /* not ANSI_DECLARATORS */
+  void trifree(memptr)
+  VOID *memptr;
+  #endif /* not ANSI_DECLARATORS */
+
+  {
+    free(memptr);
+  }
+#endif /* not CUSTOM_ALLOCATOR */
 
 /**                                                                         **/
 /**                                                                         **/
